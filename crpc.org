@@ -1,0 +1,83 @@
+#+TITLE: CRPC
+#+AUTHOR: Samiur
+
+* Overview
+
+CRPC is a service generator written in C.
+
+A user specifies data types and RPC methods in a C-like syntax.
+The framework does the work of generate structs and methods for communicating
+data types over wire. A developer can use this to pre-generate some of the code
+for communicating between client and server. Once that code generates, a
+developer will continue writing on top of it.
+
+For instance, a user can create a service to communicate a random number.
+An input request can define some limits and whether to regenerate a seed or
+not:
+
+type RandomNumberInput {
+  int lowerBound;
+  int upperBound;
+  bool regenerateSeed;
+}
+
+A user can expect back a random number:
+
+type RandomNumberOuput {
+  int randomNumber;
+}
+
+A user can define a service:
+
+service RandomNumber {
+  GenerateRandomNumber: (RandomNumberInput) -> (RandomNumberOutput)
+}
+
+From here, the crpc binary will generate the following files:
+- RandomNumberTypes.h - header files that contains all the types a service would
+  need. For instance RandomNumber service needs RandomNumberInput and
+  RandomNumberOutput so the types header would contain definitions for those
+  and useful methods for [de]serializing them.
+- RandomNumberService.h - contains a struct that acts as the server. A developer
+  can invoke methods on that struct to read and write data from it. The struct
+  acts as the gateway to others.
+
+A developer can then use the servers as such:
+
+#+BEGIN_SRC C
+#include "RandomNumberServer.h"
+#include "RandomNumberTypes.h"
+
+int main() {
+  struct RandomNumberInput input;
+  // set input
+  struct RandomNumberServer server;
+  RandomNumberServer_init("10.0.0.2", &server);
+  if (!server.ok) return -1;
+  RandomNumberServer_call(RandomNumberServer_GenerateRandomNumber, &input, &output);
+  if (!output.ok) return -1;
+  printf("Got back random number: %i\n", output.randomNumber);
+  return 0;
+}
+#+END_SRC
+
+The generator adds extra data to structs as needed. For instance, every type
+will carry an integer to represent the status.
+
+This is to be used by the Director, a distributed lock service. In it, there
+will be multiple clients all speaking to a single endpoint, which abstracts
+an odd number of servers.
+
+Supported base types:
+- bool
+- short
+- unsigned short
+- int
+- unsigned int
+- long
+- long long
+- float
+- double
+- long double
+- char
+- string
