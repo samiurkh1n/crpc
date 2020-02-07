@@ -1,1 +1,2 @@
-Program(target='main', source=['main.c'])
+env = Environment(CCFLAGS='/I \include')
+env.Program(target='main', source=['main.c'])

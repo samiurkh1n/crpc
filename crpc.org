@@ -104,3 +104,9 @@ Supported base types:
 
 ** CodeGeneration
    Generates C code as needed.
+
+* Usage
+
+#+BEGIN_SRC bash
+$ crpc ./random_number_generator.crpc --output_dir=/path/to/store/generated/files
+#+END_SRC
