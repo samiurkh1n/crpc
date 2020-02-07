@@ -15,30 +15,36 @@ For instance, a user can create a service to communicate a random number.
 An input request can define some limits and whether to regenerate a seed or
 not:
 
+#+BEGIN_SRC go
 type RandomNumberInput {
   int lowerBound;
   int upperBound;
   bool regenerateSeed;
 }
+#+END_SRC
 
 A user can expect back a random number:
 
+#+BEGIN_SRC go
 type RandomNumberOuput {
   int randomNumber;
 }
+#+END_SRC
 
 A user can define a service:
 
+#+BEGIN_SRC go
 service RandomNumber {
   GenerateRandomNumber: (RandomNumberInput) -> (RandomNumberOutput)
 }
+#+END_SRC
 
 From here, the crpc binary will generate the following files:
 - RandomNumberTypes.h - header files that contains all the types a service would
   need. For instance RandomNumber service needs RandomNumberInput and
   RandomNumberOutput so the types header would contain definitions for those
   and useful methods for [de]serializing them.
-- RandomNumberService.h - contains a struct that acts as the server. A developer
+- RandomNumberService.[h/c] - contains a struct that acts as the server. A developer
   can invoke methods on that struct to read and write data from it. The struct
   acts as the gateway to others.
 
@@ -81,3 +87,20 @@ Supported base types:
 - long double
 - char
 - string
+
+- type (becomes a struct)
+- service
+
+* Libraries
+
+** Lexer
+   Takes file and breaks it down into each word (whitespace seperated).
+
+** Parser
+   Adds structure to the words read and returns error if words can't be parsed.
+
+** Semantics
+   Adds meaning to the words read and returns error if it's meaningless.
+
+** CodeGeneration
+   Generates C code as needed.
